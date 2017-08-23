@@ -22,6 +22,11 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
+
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseListAdapter<ChatMessage> adapter;
@@ -34,9 +39,12 @@ public class MainActivity extends AppCompatActivity {
 
         if(FirebaseAuth.getInstance().getCurrentUser() == null) {
             // Start sign in/sign up activity
+            List<AuthUI.IdpConfig> providers = new ArrayList<>();
+            providers.add(new AuthUI.IdpConfig.Builder(GOOGLE_PROVIDER).build());
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
+                            .setProviders(providers)
                             .build(),
                     SIGN_IN_REQUEST_CODE
             );

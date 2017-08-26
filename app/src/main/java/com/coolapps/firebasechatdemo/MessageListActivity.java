@@ -1,11 +1,13 @@
 package com.coolapps.firebasechatdemo;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,25 +20,38 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static com.coolapps.firebasechatdemo.ChannelListActivity.TABLE_CHANNELS;
 import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
 
-public class MainActivity extends AppCompatActivity {
+/**
+ * Created by rupam.ghosh on 26/08/17.
+ */
 
+public class MessageListActivity extends AppCompatActivity {
     private FirebaseListAdapter<ChatMessage> adapter;
     private static final int SIGN_IN_REQUEST_CODE = 1;
+    private static final String TABLE_MESSAGES = "messages";
+    private String channelId;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_message_list);
 
+        channelId = getIntent().getStringExtra("CHANNEL_ID");
+        userId = getIntent().getStringExtra("USER_ID");
         if(FirebaseAuth.getInstance().getCurrentUser() == null) {
             // Start sign in/sign up activity
             List<AuthUI.IdpConfig> providers = new ArrayList<>();
@@ -59,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
             // Load chat room contents
-            displayChatMessages();
+             displayChatMessages();
         }
 
         FloatingActionButton fab =
@@ -72,13 +87,10 @@ public class MainActivity extends AppCompatActivity {
 
                 // Read the input field and push a new instance
                 // of ChatMessage to the Firebase database
-                FirebaseDatabase.getInstance()
-                        .getReference()
+                FirebaseDatabase.getInstance().getReference().child(TABLE_MESSAGES).child(channelId).child(TABLE_MESSAGES)
                         .push()
                         .setValue(new ChatMessage(input.getText().toString(),
-                                FirebaseAuth.getInstance()
-                                        .getCurrentUser()
-                                        .getDisplayName())
+                                userId)
                         );
 
                 // Clear the input
@@ -100,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            Toast.makeText(MainActivity.this,
+                            Toast.makeText(MessageListActivity.this,
                                     "You have been signed out.",
                                     Toast.LENGTH_LONG)
                                     .show();
@@ -142,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
 
         adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
-                R.layout.message, FirebaseDatabase.getInstance().getReference()) {
+                R.layout.message, FirebaseDatabase.getInstance().getReference().child(TABLE_MESSAGES).child(channelId).child(TABLE_MESSAGES)) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
                 // Get references to the views of message.xml

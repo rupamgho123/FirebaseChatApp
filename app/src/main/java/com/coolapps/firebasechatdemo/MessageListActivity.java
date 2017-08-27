@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.coolapps.firebasechatdemo.ChannelListActivity.TABLE_CHANNELS;
 import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
 
 /**
@@ -41,7 +40,6 @@ import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
 public class MessageListActivity extends AppCompatActivity {
     private FirebaseListAdapter<ChatMessage> adapter;
     private static final int SIGN_IN_REQUEST_CODE = 1;
-    private static final String TABLE_MESSAGES = "messages";
     private String channelId;
     private String userId;
 
@@ -87,7 +85,7 @@ public class MessageListActivity extends AppCompatActivity {
 
                 // Read the input field and push a new instance
                 // of ChatMessage to the Firebase database
-                FirebaseDatabase.getInstance().getReference().child(TABLE_MESSAGES).child(channelId).child(TABLE_MESSAGES)
+                DatabaseReferenceHelper.getMessageOfChannel(channelId)
                         .push()
                         .setValue(new ChatMessage(input.getText().toString(),
                                 userId)
@@ -154,7 +152,7 @@ public class MessageListActivity extends AppCompatActivity {
         ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
 
         adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
-                R.layout.message, FirebaseDatabase.getInstance().getReference().child(TABLE_MESSAGES).child(channelId).child(TABLE_MESSAGES)) {
+                R.layout.message, DatabaseReferenceHelper.getMessageOfChannel(channelId)) {
             @Override
             protected void populateView(View v, ChatMessage model, int position) {
                 // Get references to the views of message.xml

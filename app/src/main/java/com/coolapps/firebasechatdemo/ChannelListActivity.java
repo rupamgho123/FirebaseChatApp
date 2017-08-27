@@ -42,7 +42,6 @@ public class ChannelListActivity extends AppCompatActivity {
 
     private FirebaseListAdapter<Channel> adapter;
     private static final int SIGN_IN_REQUEST_CODE = 1;
-    public static final String TABLE_CHANNELS = "channels";
     private String phoneNumber;
 
     @Override
@@ -84,9 +83,10 @@ public class ChannelListActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 EditText input = (EditText)findViewById(R.id.input);
-
-                addChannel(input.getEditableText().toString());
-
+                String contactNumber = input.getEditableText().toString();
+                if(!TextUtils.isEmpty(contactNumber)) {
+                    addChannel(Arrays.asList(contactNumber));
+                }
                 // Clear the input
                 input.setText("");
             }
@@ -159,6 +159,7 @@ public class ChannelListActivity extends AppCompatActivity {
                 phoneNumber = input.getText().toString();
                 displayChannels();
                 listenToChannelList();
+                startNotificationSerice();
             }
         });
 
@@ -169,7 +170,7 @@ public class ChannelListActivity extends AppCompatActivity {
         ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
 
         adapter = new FirebaseListAdapter<Channel>(this, Channel.class,
-                R.layout.message, FirebaseDatabase.getInstance().getReference().child(phoneNumber).child(TABLE_CHANNELS)) {
+                R.layout.message, DatabaseReferenceHelper.getChannelOfUserDatabaseRef(phoneNumber)) {
             @Override
             protected void populateView(View v, Channel model, int position) {
                 // Get references to the views of message.xml
@@ -191,60 +192,63 @@ public class ChannelListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent  = new Intent(ChannelListActivity.this,MessageListActivity.class);
-                intent.putExtra("CHANNEL_ID",adapter.getRef(i).getKey());
-                intent.putExtra("USER_ID",phoneNumber);
+                intent.putExtra(FirebaseConstants.CHANNEL_ID,adapter.getRef(i).getKey());
+                intent.putExtra(FirebaseConstants.USER_ID,phoneNumber);
                 startActivity(intent);
             }
         });
     }
 
     private void listenToChannelList() {
-        DatabaseReference channels = FirebaseDatabase.getInstance().getReference();
-        channels.child(TABLE_CHANNELS).addChildEventListener(new ChildEventListener() {
+        DatabaseReferenceHelper.getChannelsDatabaseRef().addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TABLE_CHANNELS + "onChildAdded","");
+
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                Log.d(TABLE_CHANNELS + "onChildChanged","");
+
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Log.d(TABLE_CHANNELS + "onChildRemoved","");
+
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                Log.d(TABLE_CHANNELS + "onChildMoved","");
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.d(TABLE_CHANNELS + "onCancelled","");
+
             }
         });
 
     }
 
-    private void addChannel(String contactNumber) {
-        if(!TextUtils.isEmpty(contactNumber)) {
+    private void startNotificationSerice(){
+        Intent intent = new Intent(this,NotificationService.class);
+        intent.putExtra(FirebaseConstants.USER_ID,phoneNumber);
+        startService(intent);
+    }
+
+    private void addChannel(@NonNull  List<String> contactNumbers) {
+        if(contactNumbers.size() > 0) {
             User owner = new User(phoneNumber);
-            DatabaseReference channelReference = FirebaseDatabase.getInstance()
-                    .getReference()
-                    .child(phoneNumber)
-                    .child(TABLE_CHANNELS)
+            DatabaseReference channelReference = DatabaseReferenceHelper
+                    .getChannelOfUserDatabaseRef(phoneNumber)
                     .push();
             channelReference.setValue(new Channel(owner, null, null, null));
-            FirebaseDatabase.getInstance()
-                    .getReference()
-                    .child(contactNumber)
-                    .child(TABLE_CHANNELS)
-                    .child(channelReference.getKey())
-                    .setValue(new Channel(owner, null, null, null)
-                    );
+            for(String contactNumber : contactNumbers) {
+                DatabaseReferenceHelper
+                        .getChannelOfUserDatabaseRef(contactNumber)
+                        .child(channelReference.getKey())
+                        .setValue(new Channel(owner, null, null, null)
+                        );
+            }
         }
     }
 }

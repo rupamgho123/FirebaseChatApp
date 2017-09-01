@@ -95,6 +95,8 @@ public class NotificationService extends Service {
         /*  Use the notification type to switch activity to stack on the main activity*/
         if(notification.getType().equals(NOTIFICATION_TYPE_MESSAGE)){
             intent = new Intent(context, MessageListActivity.class);
+            intent.putExtra(FirebaseConstants.CHANNEL_ID,notification.getChannelId());
+            intent.putExtra(FirebaseConstants.USER_ID,notification.getDescription());
         }
 
 
@@ -122,7 +124,4 @@ public class NotificationService extends Service {
                 .child(FirebaseConstants.STATUS)
                 .setValue(1);
     }
-
-
-
 }

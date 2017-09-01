@@ -12,34 +12,15 @@ import java.util.Map;
 
 public class Notification {
 
-    String user_id;
-
-    public Notification(String user_id, String message, String description, String type,
+    public Notification(String channelId, String userId, String message, String description, String type,
                         long timestamp, long status) {
-        this.user_id = user_id;
+        this.userId = userId;
         this.message = message;
         this.description = description;
         this.type = type;
         this.timestamp = timestamp;
         this.status = status;
-    }
-
-    String message;
-    String description;
-    String type;
-    long timestamp;
-    long status;
-
-    public Notification() {
-    }
-
-
-    public String getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(String user_id) {
-        this.user_id = user_id;
+        this.channelId = channelId;
     }
 
     public String getMessage() {
@@ -80,6 +61,33 @@ public class Notification {
 
     public void setStatus(long status) {
         this.status = status;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+
+    String message;
+    String description;
+    String type;
+    long timestamp;
+    long status;
+    String userId;
+    String channelId;
+
+    public Notification() {
     }
 
     @Exclude

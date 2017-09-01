@@ -38,6 +38,7 @@ public class MessageListActivity extends AppCompatActivity {
     private FirebaseListAdapter<ChatMessage> adapter;
     private static final int SIGN_IN_REQUEST_CODE = 1;
     private String channelId;
+    private String channelName;
     private String userId;
 
     @Override
@@ -45,8 +46,12 @@ public class MessageListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_list);
 
-        channelId = getIntent().getStringExtra("CHANNEL_ID");
-        userId = getIntent().getStringExtra("USER_ID");
+        channelId = getIntent().getStringExtra(CHANNEL_ID);
+        userId = getIntent().getStringExtra(USER_ID);
+
+        if(channelId == null || userId == null){
+            return;
+        }
         if(FirebaseAuth.getInstance().getCurrentUser() == null) {
             // Start sign in/sign up activity
             List<AuthUI.IdpConfig> providers = new ArrayList<>();
@@ -121,7 +126,9 @@ public class MessageListActivity extends AppCompatActivity {
                     DatabaseReferenceHelper
                             .getNotificationDatabaseRef(user.getIdentifier())
                             .push()
-                            .setValue(new Notification(MESSAGE_NOTIFICATION_TITLE , mainUser, message, NOTIFICATION_TYPE_MESSAGE,
+                            .setValue(new Notification(channelId, userId, message,
+                                    channelName != null ? channelName : userId,
+                                    NOTIFICATION_TYPE_MESSAGE,
                                     System.currentTimeMillis(), 0));
                 }
             }
@@ -202,5 +209,25 @@ public class MessageListActivity extends AppCompatActivity {
         };
 
         listOfMessages.setAdapter(adapter);
+
+        DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot != null){
+                    Channel channel = dataSnapshot.getValue(Channel.class);
+                    if(channel != null) {
+                        channelName = channel.getChannelName();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId).child(LAST_READ_TIMESTAMP)
+                .setValue(System.currentTimeMillis());
     }
 }

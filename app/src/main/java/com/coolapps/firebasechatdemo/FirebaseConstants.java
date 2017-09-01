@@ -8,7 +8,7 @@ interface FirebaseConstants {
     String USER_ID = "USER_ID";
     String STATUS = "status";
     String CHANNEL_ID = "CHANNEL_ID";
-    String FAKE_TABLE_READ = "READ";
+    String LAST_READ_TIMESTAMP = "last_read";
     String TABLE_CHANNELS = "channels";
     String TABLE_MESSAGES = "messages";
     String TABLE_NOTIFICATIONS = "notifications";

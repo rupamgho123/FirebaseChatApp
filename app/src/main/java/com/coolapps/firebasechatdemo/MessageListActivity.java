@@ -3,12 +3,10 @@ package com.coolapps.firebasechatdemo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,20 +20,14 @@ import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static com.coolapps.firebasechatdemo.FirebaseConstants.FAKE_TABLE_READ;
-import static com.coolapps.firebasechatdemo.FirebaseConstants.MESSAGE_NOTIFICATION_TITLE;
-import static com.coolapps.firebasechatdemo.FirebaseConstants.MESSAGE_TYPE_TEXT;
+import static com.coolapps.firebasechatdemo.FirebaseConstants.*;
 import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
 
 /**
@@ -115,7 +107,7 @@ public class MessageListActivity extends AppCompatActivity {
 
                         }
                     });
-                    DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId).child(FAKE_TABLE_READ).push().setValue(System.currentTimeMillis());
+                    DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId).child(LAST_READ_TIMESTAMP).setValue(System.currentTimeMillis());
                     input.setText("");
                 }
             }
@@ -129,7 +121,7 @@ public class MessageListActivity extends AppCompatActivity {
                     DatabaseReferenceHelper
                             .getNotificationDatabaseRef(user.getIdentifier())
                             .push()
-                            .setValue(new Notification(MESSAGE_NOTIFICATION_TITLE , mainUser, message, MESSAGE_TYPE_TEXT,
+                            .setValue(new Notification(MESSAGE_NOTIFICATION_TITLE , mainUser, message, NOTIFICATION_TYPE_MESSAGE,
                                     System.currentTimeMillis(), 0));
                 }
             }

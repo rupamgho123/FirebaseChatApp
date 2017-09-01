@@ -14,6 +14,26 @@ public class Notification {
 
     String user_id;
 
+    public Notification(String user_id, String message, String description, String type,
+                        long timestamp, long status) {
+        this.user_id = user_id;
+        this.message = message;
+        this.description = description;
+        this.type = type;
+        this.timestamp = timestamp;
+        this.status = status;
+    }
+
+    String message;
+    String description;
+    String type;
+    long timestamp;
+    long status;
+
+    public Notification() {
+    }
+
+
     public String getUser_id() {
         return user_id;
     }
@@ -61,15 +81,6 @@ public class Notification {
     public void setStatus(long status) {
         this.status = status;
     }
-
-    String message;
-    String description;
-    String type;
-    long timestamp,status;
-
-    public Notification() {
-    }
-
 
     @Exclude
     public Map<String, Object> toMap() {

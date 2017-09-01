@@ -14,9 +14,9 @@ public class Channel {
 
     }
 
-    public Channel(User owner, HashMap<String,ChatMessage> messages, HashMap<String,User> confirmedUsers, HashMap<String,User> unConfirmedUsers) {
+    public Channel(String channelName, User owner, List<User> confirmedUsers, List<User> unConfirmedUsers) {
+        this.channelName = channelName;
         this.owner = owner;
-        this.messages = messages;
         this.confirmedUsers = confirmedUsers;
         this.unConfirmedUsers = unConfirmedUsers;
     }
@@ -29,32 +29,32 @@ public class Channel {
         this.owner = owner;
     }
 
-    public HashMap<String,ChatMessage> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(HashMap<String,ChatMessage> messages) {
-        this.messages = messages;
-    }
-
-    public HashMap<String,User> getConfirmedUsers() {
+    public List<User> getConfirmedUsers() {
         return confirmedUsers;
     }
 
-    public void setConfirmedUsers(HashMap<String,User> confirmedUsers) {
+    public void setConfirmedUsers(List<User> confirmedUsers) {
         this.confirmedUsers = confirmedUsers;
     }
 
-    public HashMap<String,User> getUnConfirmedUsers() {
+    public List<User> getUnConfirmedUsers() {
         return unConfirmedUsers;
     }
 
-    public void setUnConfirmedUsers(HashMap<String,User> unConfirmedUsers) {
+    public void setUnConfirmedUsers(List<User> unConfirmedUsers) {
         this.unConfirmedUsers = unConfirmedUsers;
     }
 
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
+    }
+
+    private String channelName;
     private User owner;
-    private HashMap<String,ChatMessage> messages;
-    private HashMap<String,User> confirmedUsers;
-    private HashMap<String,User> unConfirmedUsers;
+    private List<User> confirmedUsers;
+    private List<User> unConfirmedUsers;
 }

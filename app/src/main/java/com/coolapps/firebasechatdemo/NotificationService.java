@@ -15,6 +15,8 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
+import static com.coolapps.firebasechatdemo.FirebaseConstants.*;
+
 
 /**
  * Created by rupam.ghosh on 28/08/17.
@@ -87,19 +89,17 @@ public class NotificationService extends Service {
                 ))
                 .setAutoCancel(true);
 
-        Intent backIntent = new Intent(context, ChannelListActivity.class);
-        backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        Intent intent = new Intent(context, MessageListActivity.class);
+        Intent intent = new Intent(context, ChannelListActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         /*  Use the notification type to switch activity to stack on the main activity*/
-        if(notification.getType().equals("message_list")){
+        if(notification.getType().equals(NOTIFICATION_TYPE_MESSAGE)){
             intent = new Intent(context, MessageListActivity.class);
         }
 
 
         final PendingIntent pendingIntent = PendingIntent.getActivities(context, 900,
-                new Intent[] {backIntent}, PendingIntent.FLAG_ONE_SHOT);
+                new Intent[] {intent}, PendingIntent.FLAG_ONE_SHOT);
 
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);

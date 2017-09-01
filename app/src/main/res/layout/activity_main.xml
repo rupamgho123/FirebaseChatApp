@@ -5,7 +5,7 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.coolapps.firebasechatdemo.MainActivity">
+    tools:context="com.coolapps.firebasechatdemo.ChannelListActivity">
 
 <android.support.design.widget.FloatingActionButton
     android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Input"
+        android:hint="Enter channel name"
         android:id="@+id/input"
         />
 </android.support.design.widget.TextInputLayout>

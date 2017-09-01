@@ -5,6 +5,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import static com.coolapps.firebasechatdemo.FirebaseConstants.TABLE_CHANNELS;
 import static com.coolapps.firebasechatdemo.FirebaseConstants.TABLE_MESSAGES;
+import static com.coolapps.firebasechatdemo.FirebaseConstants.TABLE_NOTIFICATIONS;
 
 /**
  * Created by rupam.ghosh on 28/08/17.
@@ -12,7 +13,7 @@ import static com.coolapps.firebasechatdemo.FirebaseConstants.TABLE_MESSAGES;
 
 public class DatabaseReferenceHelper {
     public static DatabaseReference getNotificationDatabaseRef(String userId){
-        return FirebaseDatabase.getInstance().getReference().child("notifications").child(userId);
+        return FirebaseDatabase.getInstance().getReference().child(TABLE_NOTIFICATIONS).child(userId);
     }
 
     public static DatabaseReference getMessageOfChannel(String channelId){

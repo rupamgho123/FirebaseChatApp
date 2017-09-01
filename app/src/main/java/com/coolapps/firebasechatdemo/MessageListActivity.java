@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
@@ -26,11 +27,15 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.coolapps.firebasechatdemo.FirebaseConstants.FAKE_TABLE_READ;
+import static com.coolapps.firebasechatdemo.FirebaseConstants.MESSAGE_NOTIFICATION_TITLE;
+import static com.coolapps.firebasechatdemo.FirebaseConstants.MESSAGE_TYPE_TEXT;
 import static com.firebase.ui.auth.AuthUI.GOOGLE_PROVIDER;
 
 /**
@@ -85,16 +90,50 @@ public class MessageListActivity extends AppCompatActivity {
 
                 // Read the input field and push a new instance
                 // of ChatMessage to the Firebase database
-                DatabaseReferenceHelper.getMessageOfChannel(channelId)
-                        .push()
-                        .setValue(new ChatMessage(input.getText().toString(),
-                                userId)
-                        );
+                final String message = input.getText().toString();
+                if(!TextUtils.isEmpty(message)) {
+                    DatabaseReferenceHelper.getMessageOfChannel(channelId)
+                            .push()
+                            .setValue(new ChatMessage(message,
+                                    userId, false)
+                            );
 
-                // Clear the input
-                input.setText("");
+                    // Clear the input
+                    DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot != null) {
+                                Channel channel = dataSnapshot.getValue(Channel.class);
+                                if (channel != null && channel.getConfirmedUsers() != null) {
+                                    sendNotificationToAllUsers(userId, message, channel.getConfirmedUsers());
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                    DatabaseReferenceHelper.getChannelsDatabaseRef().child(channelId).child(FAKE_TABLE_READ).push().setValue(System.currentTimeMillis());
+                    input.setText("");
+                }
             }
         });
+    }
+
+    private void sendNotificationToAllUsers(@NonNull String mainUser,@NonNull String message, @NonNull List<User> users) {
+        if(users.size() > 0) {
+            for(User user : users) {
+                if(!user.getIdentifier().equalsIgnoreCase(mainUser)) {
+                    DatabaseReferenceHelper
+                            .getNotificationDatabaseRef(user.getIdentifier())
+                            .push()
+                            .setValue(new Notification(MESSAGE_NOTIFICATION_TITLE , mainUser, message, MESSAGE_TYPE_TEXT,
+                                    System.currentTimeMillis(), 0));
+                }
+            }
+        }
     }
 
     @Override

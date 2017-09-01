@@ -83,9 +83,9 @@ public class ChannelListActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 EditText input = (EditText)findViewById(R.id.input);
-                String contactNumber = input.getEditableText().toString();
-                if(!TextUtils.isEmpty(contactNumber)) {
-                    addChannel(Arrays.asList(contactNumber));
+                String channelName = input.getEditableText().toString();
+                if(!TextUtils.isEmpty(channelName)) {
+                    showCoMemberDialog(channelName);
                 }
                 // Clear the input
                 input.setText("");
@@ -166,6 +166,29 @@ public class ChannelListActivity extends AppCompatActivity {
         builder.show();
     }
 
+
+    private void showCoMemberDialog(final String channelName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter phone number with whom you want to chat");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String coMemberNumber = input.getText().toString();
+                if(!TextUtils.isEmpty(coMemberNumber)) {
+                    addChannel(Arrays.asList(coMemberNumber), channelName);
+                }
+            }
+        });
+
+        builder.show();
+    }
+
+
     private void displayChannels() {
         ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
 
@@ -180,7 +203,7 @@ public class ChannelListActivity extends AppCompatActivity {
 
                 // Set their text
                 // messageText.setText(model.getConfirmedUsers().get(0).getIdentifier());
-                messageUser.setText(model.getOwner().getIdentifier());
+                messageUser.setText(model.getChannelName());
 
                 // Format the date before showing it
                 //messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",model.getMessageTime()));
@@ -200,7 +223,7 @@ public class ChannelListActivity extends AppCompatActivity {
     }
 
     private void listenToChannelList() {
-        DatabaseReferenceHelper.getChannelsDatabaseRef().addChildEventListener(new ChildEventListener() {
+        DatabaseReferenceHelper.getChannelOfUserDatabaseRef(phoneNumber).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
@@ -235,19 +258,28 @@ public class ChannelListActivity extends AppCompatActivity {
         startService(intent);
     }
 
-    private void addChannel(@NonNull  List<String> contactNumbers) {
+    private void addChannel(@NonNull  List<String> contactNumbers, @NonNull String channelName) {
         if(contactNumbers.size() > 0) {
+            List<User> confirmedUsers = new ArrayList<>();
             User owner = new User(phoneNumber);
-            DatabaseReference channelReference = DatabaseReferenceHelper
+            for(String contactNumber : contactNumbers) {
+                confirmedUsers.add(new User(contactNumber));
+            }
+            confirmedUsers.add(owner);
+            Channel newChannel = new Channel(channelName, owner, confirmedUsers, null);
+
+            DatabaseReference channelReference = DatabaseReferenceHelper.getChannelsDatabaseRef().push();
+            channelReference.setValue(newChannel);
+
+            DatabaseReferenceHelper
                     .getChannelOfUserDatabaseRef(phoneNumber)
-                    .push();
-            channelReference.setValue(new Channel(owner, null, null, null));
+                    .child(channelReference.getKey())
+                    .setValue(newChannel);
             for(String contactNumber : contactNumbers) {
                 DatabaseReferenceHelper
                         .getChannelOfUserDatabaseRef(contactNumber)
                         .child(channelReference.getKey())
-                        .setValue(new Channel(owner, null, null, null)
-                        );
+                        .setValue(newChannel);
             }
         }
     }

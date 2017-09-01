@@ -96,7 +96,6 @@ public class NotificationService extends Service {
         if(notification.getType().equals(NOTIFICATION_TYPE_MESSAGE)){
             intent = new Intent(context, MessageListActivity.class);
             intent.putExtra(FirebaseConstants.CHANNEL_ID,notification.getChannelId());
-            intent.putExtra(FirebaseConstants.USER_ID,notification.getDescription());
         }
 
 

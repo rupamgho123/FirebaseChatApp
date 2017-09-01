@@ -47,7 +47,7 @@ public class MessageListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_message_list);
 
         channelId = getIntent().getStringExtra(CHANNEL_ID);
-        userId = getIntent().getStringExtra(USER_ID);
+        userId = Util.getCurrentUserID(this);
 
         if(channelId == null || userId == null){
             return;

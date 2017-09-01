@@ -9,8 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,13 +22,11 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +38,7 @@ public class ChannelListActivity extends AppCompatActivity {
 
     private FirebaseListAdapter<Channel> adapter;
     private static final int SIGN_IN_REQUEST_CODE = 1;
-    private String phoneNumber;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +152,8 @@ public class ChannelListActivity extends AppCompatActivity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                phoneNumber = input.getText().toString();
+                userId = input.getText().toString();
+                Util.setCurrentUserID(ChannelListActivity.this,userId);
                 displayChannels();
                 listenToChannelList();
                 startNotificationSerice();
@@ -193,7 +190,7 @@ public class ChannelListActivity extends AppCompatActivity {
         ListView listOfMessages = (ListView)findViewById(R.id.list_of_messages);
 
         adapter = new FirebaseListAdapter<Channel>(this, Channel.class,
-                R.layout.message, DatabaseReferenceHelper.getChannelOfUserDatabaseRef(phoneNumber)) {
+                R.layout.message, DatabaseReferenceHelper.getChannelOfUserDatabaseRef(userId)) {
             @Override
             protected void populateView(View v, Channel model, int position) {
                 // Get references to the views of message.xml
@@ -216,14 +213,13 @@ public class ChannelListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent  = new Intent(ChannelListActivity.this,MessageListActivity.class);
                 intent.putExtra(FirebaseConstants.CHANNEL_ID,adapter.getRef(i).getKey());
-                intent.putExtra(FirebaseConstants.USER_ID,phoneNumber);
                 startActivity(intent);
             }
         });
     }
 
     private void listenToChannelList() {
-        DatabaseReferenceHelper.getChannelOfUserDatabaseRef(phoneNumber).addChildEventListener(new ChildEventListener() {
+        DatabaseReferenceHelper.getChannelOfUserDatabaseRef(userId).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
@@ -254,14 +250,14 @@ public class ChannelListActivity extends AppCompatActivity {
 
     private void startNotificationSerice(){
         Intent intent = new Intent(this,NotificationService.class);
-        intent.putExtra(FirebaseConstants.USER_ID,phoneNumber);
+        intent.putExtra(FirebaseConstants.USER_ID, userId);
         startService(intent);
     }
 
     private void addChannel(@NonNull  List<String> contactNumbers, @NonNull String channelName) {
         if(contactNumbers.size() > 0) {
             List<User> confirmedUsers = new ArrayList<>();
-            User owner = new User(phoneNumber);
+            User owner = new User(userId);
             for(String contactNumber : contactNumbers) {
                 confirmedUsers.add(new User(contactNumber));
             }
@@ -272,7 +268,7 @@ public class ChannelListActivity extends AppCompatActivity {
             channelReference.setValue(newChannel);
 
             DatabaseReferenceHelper
-                    .getChannelOfUserDatabaseRef(phoneNumber)
+                    .getChannelOfUserDatabaseRef(userId)
                     .child(channelReference.getKey())
                     .setValue(newChannel);
             for(String contactNumber : contactNumbers) {
